@@ -1,0 +1,80 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // --- Entity Validations ---
+
+    function isValidChatSession(data) {
+      return data.keys().hasAll(['userId', 'updatedAt']) &&
+             data.keys().size() <= 3 &&
+             data.userId == request.auth.uid &&
+             data.updatedAt == request.time &&
+             (data.get('lastMessage', '') is string && data.get('lastMessage', '').size() <= 500);
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['displayName', 'updatedAt']) &&
+             data.keys().size() <= 4 &&
+             data.displayName is string && data.displayName.size() <= 100 &&
+             data.updatedAt == request.time &&
+             (data.get('academicLevel', '') is string && data.get('academicLevel', '').size() <= 100) &&
+             (data.get('bio', '') is string && data.get('bio', '').size() <= 1000);
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['role', 'content', 'createdAt']) &&
+             data.keys().size() == 3 &&
+             data.role in ['user', 'model'] &&
+             data.content is string && data.content.size() <= 4000 &&
+             data.createdAt == request.time;
+    }
+
+    // --- Collections ---
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow create, update: if isOwner(userId) && isValidUserProfile(incoming());
+    }
+
+    match /chats/{chatId} {
+      allow get: if isSignedIn() && isOwner(existing().userId);
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isSignedIn() && 
+                    isValidId(chatId) && 
+                    isValidChatSession(incoming());
+      
+      allow update: if isSignedIn() && 
+                    isOwner(existing().userId) && 
+                    isValidChatSession(incoming()) &&
+                    incoming().userId == existing().userId;
+      
+      allow delete: if isSignedIn() && isOwner(existing().userId);
+
+      match /messages/{messageId} {
+        // Master Gate check: Only access messages if you own the parent chat session
+        function chatIsOwnedBy(uid) {
+          return get(/databases/$(database)/documents/chats/$(chatId)).data.userId == uid;
+        }
+
+        allow read, list: if isSignedIn() && chatIsOwnedBy(request.auth.uid);
+        
+        allow create: if isSignedIn() && 
+                      chatIsOwnedBy(request.auth.uid) && 
+                      isValidId(messageId) && 
+                      isValidMessage(incoming());
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Lutherio",
+  "description": "Lutherio is an advanced academic ecosystem featuring Professor Luther, a sophisticated AI research lead. Connect your neural link to engage in persistent scholarly dialogue and data-driven insights.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": []
+}

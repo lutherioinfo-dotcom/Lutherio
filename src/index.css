@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+
+  /* Elegant Dark Palette */
+  --color-dark-void: #050506;
+  --color-dark-panel: #0F0F11;
+  --color-dark-surface: #080809;
+  --color-dark-elevated: #121215;
+  
+  --color-border-dim: #1A1A1C;
+  --color-border-active: #242428;
+  --color-border-highlight: #303036;
+
+  --color-text-bright: #E0E0E6;
+  --color-text-dim: #A0A0A5;
+  --color-text-muted: #606066;
+  --color-text-ghost: #404045;
+
+  --color-accent-blue: #3B82F6;
+}
+
+@layer base {
+  body {
+    @apply bg-dark-void text-text-bright font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .text-chrome {
+    background: linear-gradient(
+      180deg,
+      #FFFFFF 0%,
+      #A0A0A5 50%,
+      #404045 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .glass-panel {
+    @apply bg-dark-panel border border-border-dim shadow-2xl;
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

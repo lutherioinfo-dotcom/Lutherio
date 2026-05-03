@@ -1,0 +1,86 @@
+{
+  "entities": {
+    "Message": {
+      "title": "Message",
+      "description": "A single message in a chat history.",
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": ["user", "model"],
+          "description": "The sender of the message."
+        },
+        "content": {
+          "type": "string",
+          "description": "The text content of the message."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the message was sent."
+        }
+      },
+      "required": ["role", "content", "createdAt"]
+    },
+    "ChatSession": {
+      "title": "Chat Session",
+      "description": "A collection of messages between a user and Professor Luther.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who owns this session."
+        },
+        "lastMessage": {
+          "type": "string",
+          "description": "Snippet of the last message sent."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last activity in the session."
+        }
+      },
+      "required": ["userId", "updatedAt"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Information about a user including their academic background.",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "Primary name of the user."
+        },
+        "academicLevel": {
+          "type": "string",
+          "description": "Current educational status."
+        },
+        "bio": {
+          "type": "string",
+          "description": "A short scholarly introduction."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last time the profile was updated."
+        }
+      },
+      "required": ["displayName", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Individual user profiles."
+    },
+    "/chats/{chatId}": {
+      "schema": "ChatSession",
+      "description": "Root session for chat history."
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Messages within a specific chat session."
+    }
+  }
+}
